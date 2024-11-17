@@ -1,0 +1,309 @@
+---
+title: "Amaizing  Baseline Survey_Final-module_g-rg1_p"
+author: "Njambi"
+format: html
+editor: visual
+---
+
+## 
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Clear the environment
+
+```{r}
+
+rm(list = ls())
+
+```
+
+## Loading necessary libraries
+
+```{r, include=FALSE}
+
+library(tidyverse) # includes the dplyr, ggplot2, tidyr, readr, stringr, forcats, tibble packages
+library(readxl)
+library(Hmisc)
+library(labelled)
+library(magrittr)
+library(datawizard)
+library(gtsummary)
+library(gt)
+library(kableExtra)
+library(flextable)
+library(splitstackshape)
+library(lubridate)
+library(foreign)
+library(haven)
+
+#library(ggplot2)
+#library(tidyr)
+#library(tibble)
+#library(dplyr)
+#library(stringr)
+
+```
+
+## Set the working directory
+
+```{r}
+# Set working directory (Not necessary since the current wd is the correct wd)
+
+setwd("C:\\Users\\awanjau\\OneDrive - CGIAR\\Alliance\\Alliance_2024\\AMAZING\\AmazingBaselineDataCleaning\\Amaizing  Baseline Survey_Final-module_g-rg1_p")
+      
+```
+
+## Loading data
+
+```{r}
+# Read a csv file
+
+amaizing_livestockproduct_path <- "C:\\Users\\awanjau\\OneDrive - CGIAR\\Alliance\\Alliance_2024\\AMAZING\\aMaizingBaseline_Files\\Amaizing  Baseline Survey_Final-module_g-rg1_p.csv"
+
+amaizing_livestockproduct <- read_csv(amaizing_livestockproduct_path)
+
+dim(amaizing_livestockproduct) # 
+
+```
+
+```{r}
+
+names(amaizing_livestockproduct)
+```
+
+```{r}
+unique(amaizing_livestockproduct$m7pindex1)
+
+
+```
+
+```{r}
+
+lproduct_levels <- c(
+  "Milk", "Yoghurt",  "Eggs", "Honey", "Fish", "Manure"
+                         )  
+
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  mutate(
+    m7pindex1 = factor(
+      m7pindex1, 
+      levels = c(1, 2, 4, 6, 7, 9), 
+      labels = lproduct_levels
+    )
+  
+  ) 
+
+```
+
+```{r}
+unique(amaizing_livestockproduct$m7pindex1)
+
+
+```
+
+```{r}
+
+unique(amaizing_livestockproduct$m7pid)
+
+```
+
+```{r}
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  mutate(
+    m7pid = factor(m7pid)
+  )
+```
+
+```{r}
+unique(amaizing_livestockproduct$g6_p)
+```
+
+```{r}
+unique(amaizing_livestockproduct$g6_p_Unit)
+```
+
+```{r}
+
+g6_p_Unit_levels <- c(
+  "Liters", "Kgs",  "Trays", "Number", "Other Specify"
+                         )  
+
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  mutate(
+    g6_p_Unit = factor(
+      g6_p_Unit, 
+      levels = c(1:4, -222), 
+      labels = g6_p_Unit_levels
+    )
+  
+  ) 
+
+```
+
+```{r}
+unique(amaizing_livestockproduct$g6_p_Unit)
+```
+
+```{r}
+unique(amaizing_livestockproduct$g6_p_sp)
+
+# Drop this column after replacement in g6_p_Unit
+```
+
+```{r}
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  mutate(
+
+    g6_p_Unit = as.character(g6_p_Unit),
+    g6_p_Unit = str_replace_all(g6_p_Unit, "Other Specify",
+                                              replacement = g6_p_sp),
+    g6_p_Unit = factor(g6_p_Unit)
+  )
+```
+
+```{r}
+unique(amaizing_livestockproduct$g6_p_Unit)
+```
+
+```{r}
+unique(amaizing_livestockproduct$g7_p)
+```
+
+```{r}
+
+manager_levels <- c(
+  
+  "Female", "Male", "Jointly"
+
+                         )  
+
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  mutate(
+    g7_p = factor(
+      g7_p, 
+      levels = c(0:2), 
+      labels = manager_levels
+    )
+  
+  ) 
+
+```
+
+```{r}
+unique(amaizing_livestockproduct$g7_p)
+```
+
+```{r}
+unique(amaizing_livestockproduct$g8_p)
+```
+
+```{r}
+
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  select(-6)
+
+names(amaizing_livestockproduct)
+```
+
+```{r}
+
+column_labels <- c(
+ 
+m7pindex = "Livestock product repeat iteration/index",
+m7pindex1 = "Livestock product level/category selected",
+m7pid = "Livestock product label/name corresponding to m7pindex1",
+g6_p = "Quantity sold of m7pid in the last one year",
+g6_p_Unit = "What was the Unit?",
+#g6_p_sp = "Please specify the Unit",
+g7_p = "Who sold m7pid?",
+g8_p = "Average per unit price (Ksh/unit)",
+PARENT_KEY = "Parent key",
+KEY = "Key",
+`SET-OF-rg1_p` = "Livestock product repeat group ID"
+)
+
+```
+
+```{r}
+
+# Rename columns with characters not supported by stata
+
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  
+  rename(SET_OF_rg1_p = `SET-OF-rg1_p`
+    
+         )
+
+```
+
+```{r}
+# Set variable/column labels
+ 
+amaizing_livestockproduct <- amaizing_livestockproduct %>%
+  
+  set_variable_labels(.labels = column_labels)   # Requires package labelled
+```
+
+Using the function View() to open the new data in a spreadsheet reveals the column names and labels.
+
+```{r}
+
+# View(amaizing_livestockproduct)
+
+```
+
+## Generate a data dictionary
+
+```{r}
+# Data dictionary
+
+amaizing_livestockproduct_dict <- look_for(amaizing_livestockproduct, labels = TRUE, values = TRUE) %>%
+  dplyr::select(-c(missing, value_labels))
+
+  gt(amaizing_livestockproduct_dict)
+
+```
+
+## Export data dictionary to CSV
+
+```{r}
+
+readr::write_csv(amaizing_livestockproduct_dict, "amaizing_livestockproduct_dict.csv")
+
+```
+
+## Export data to CSV
+
+```{r}
+
+readr::write_csv(amaizing_livestockproduct, "amaizing_livestockproduct.csv")
+
+```
+
+## Save as R data
+
+```{r}
+
+save(amaizing_livestockproduct, file = "amaizing_livestockproduct.RData")
+
+#View(amaizing_livestockproduct)
+```
+
+## Export data to SPSS
+
+```{r}
+
+write.foreign(amaizing_livestockproduct, "amaizing_livestockproduct.sav", "amaizing_livestockproduct", package = "SPSS")
+
+```
+
+## Export data to STATA
+
+```{r}
+
+write_dta(amaizing_livestockproduct, "amaizing_livestockproduct.dta")
+
+```
